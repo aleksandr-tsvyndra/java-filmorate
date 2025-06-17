@@ -8,10 +8,11 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
 import ru.yandex.practicum.filmorate.controller.marker.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -28,4 +29,5 @@ public class User {
     private String name;
     @Past(groups = Marker.OnCreate.class)
     private LocalDate birthday;
+    private final Set<Long> friends = new HashSet<>();
 }
