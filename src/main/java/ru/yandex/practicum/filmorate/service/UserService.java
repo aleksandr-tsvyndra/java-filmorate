@@ -81,9 +81,13 @@ public class UserService {
     public User removeFriend(long id, long friendId) {
         User user = getById(id);
         User friend = getById(friendId);
-        user.getFriends().remove(friendId);
+        boolean result = user.getFriends().remove(friendId);
         friend.getFriends().remove(id);
-        log.info("Юзеры с id {} и id {} перестали быть друзьями", id, friendId);
+        if (result) {
+            log.info("Юзеры с id {} и id {} перестали быть друзьями", id, friendId);
+        } else {
+            log.info("Юзеры с id {} и id {} изначально не были друзьями", id, friendId);
+        }
         return user;
     }
 

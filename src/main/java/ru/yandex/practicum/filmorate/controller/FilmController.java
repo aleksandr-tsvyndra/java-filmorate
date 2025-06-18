@@ -73,14 +73,14 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film rate(@PathVariable long id, @PathVariable long userId) {
+    public Film addLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен http-запрос, что юзер ставит лайк фильму");
-        return filmService.rate(id, userId);
+        return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film unrate(@PathVariable long id, @PathVariable long userId) {
+    public Film removeLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен http-запрос, что юзер удаляет лайк");
-        return filmService.unrate(id, userId);
+        return filmService.removeLike(id, userId);
     }
 }

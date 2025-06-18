@@ -69,7 +69,7 @@ public class FilmService {
                 .toList();
     }
 
-    public Film rate(long id, long userId) {
+    public Film addLike(long id, long userId) {
         Film film = getById(id);
         User user = userStorage.findById(userId);
         if (Objects.isNull(user)) {
@@ -83,7 +83,7 @@ public class FilmService {
         return film;
     }
 
-    public Film unrate(long id, long userId) {
+    public Film removeLike(long id, long userId) {
         Film film = getById(id);
         User user = userStorage.findById(userId);
         if (Objects.isNull(user)) {
