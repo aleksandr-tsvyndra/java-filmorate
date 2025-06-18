@@ -13,6 +13,8 @@ import ru.yandex.practicum.filmorate.annotation.ReleaseDate;
 import ru.yandex.practicum.filmorate.controller.marker.Marker;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -29,4 +31,5 @@ public class Film {
     private LocalDate releaseDate;
     @Positive(groups = Marker.OnCreate.class)
     private Integer duration;
+    private final Set<Long> likes = new HashSet<>();
 }

@@ -1,148 +1,90 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import ru.yandex.practicum.filmorate.controller.marker.Marker;
-import ru.yandex.practicum.filmorate.exception.DuplicateEmailException;
-import ru.yandex.practicum.filmorate.exception.DuplicateLoginException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 @Slf4j
 @Validated
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getAll() {
         log.info("Получен http-запрос на получение списка всех юзеров");
-        return users.values();
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getById(@PathVariable @Positive long id) {
+        log.info("Получен http-запрос на получение юзера с id {}", id);
+        return userService.getById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getUserFriends(@PathVariable @Positive long id) {
+        log.info("Получен http-запрос на получение списка друзей юзера с id {}", id);
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long otherId
+    ) {
+        log.info("Получен http-запрос на получение списка друзей, общих с другим юзером");
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
     public User create(@Valid @RequestBody User user) {
         log.info("Получен http-запрос на создание юзера");
-        if (hasDuplicateEmail(user)) {
-            var message = String.format("Имейл %s уже занят другим юзером", user.getEmail());
-            log.warn(message);
-            throw new DuplicateEmailException(message);
-        }
-        if (hasDuplicateLogin(user)) {
-            var message = String.format("Логин %s уже занят другим юзером", user.getLogin());
-            log.warn(message);
-            throw new DuplicateLoginException(message);
-        }
-        user.setId(getNextId());
-        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
-            log.info("Имя пользователя не указано — будет использован логин: {}", user.getLogin());
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.info("Новый юзер c id {} был добавлен в базу данных", user.getId());
-        return user;
+        User createdUser = userService.create(user);
+        log.info("Новый юзер с id {} был добавлен в базу данных", createdUser.getId());
+        return createdUser;
     }
 
     @PutMapping
     @Validated(Marker.OnUpdate.class)
     public User update(@Valid @RequestBody User newUser) {
         log.info("Получен http-запрос на обновление юзера");
-        if (users.containsKey(newUser.getId())) {
-            log.info("Юзер с id {} был найден в базе данных", newUser.getId());
-            User oldUser = users.get(newUser.getId());
-            updateFields(oldUser, newUser);
-            log.info("Успешно выполнен http-запрос на обновление юзера с id {}", newUser.getId());
-            return oldUser;
-        }
-        var message = String.format("Юзера с id %d нет в базе данных", newUser.getId());
-        log.warn(message);
-        throw new UserNotFoundException(message);
+        return userService.update(newUser);
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriend(
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long friendId
+    ) {
+        log.info("Получен http-запрос на добавление в друзья");
+        return userService.addFriend(id, friendId);
     }
 
-    private boolean hasDuplicateEmail(User user) {
-        log.info("Проверяем имейл из http-запроса на дубликат");
-        return users.values()
-                .stream()
-                .map(User::getEmail)
-                .anyMatch(user.getEmail()::equals);
-    }
-
-    private boolean hasDuplicateLogin(User user) {
-        log.info("Проверяем логин из http-запроса на дубликат");
-        return users.values()
-                .stream()
-                .map(User::getLogin)
-                .anyMatch(user.getLogin()::equals);
-    }
-
-    private boolean hasLoginSpaces(String login) {
-        log.info("Проверяем, что логин юзера не содержит пробельных символов");
-        boolean isSpace = false;
-        for (int i = 0; i < login.length(); i++) {
-            if (Character.isSpaceChar(login.charAt(i))) {
-                isSpace = true;
-                break;
-            }
-        }
-        return isSpace;
-    }
-
-    private boolean isEmailValid(String email) {
-        log.info("Проверяем, что имейл юзера соответствует нужному формату");
-        return email.matches(".*");
-    }
-
-    private void updateFields(User oldUser, User newUser) {
-        if (Objects.nonNull(newUser.getEmail()) && !newUser.getEmail().isBlank() && isEmailValid(newUser.getEmail())) {
-            if (!newUser.getEmail().equals(oldUser.getEmail())) {
-                if (!hasDuplicateEmail(newUser)) {
-                    log.info("Имейл юзера с id {} был обновлен", newUser.getId());
-                    oldUser.setEmail(newUser.getEmail());
-                }
-            }
-        }
-        if (Objects.nonNull(newUser.getLogin()) && !newUser.getLogin().isEmpty()
-                && !hasLoginSpaces(newUser.getLogin())) {
-            if (!newUser.getLogin().equals(oldUser.getLogin())) {
-                if (!hasDuplicateLogin(newUser)) {
-                    log.info("Логин юзера с id {} был обновлен", newUser.getId());
-                    oldUser.setLogin(newUser.getLogin());
-                }
-            }
-        }
-        if (Objects.nonNull(newUser.getName()) && !newUser.getName().isBlank()) {
-            log.info("Имя юзера с id {} было обновлено", newUser.getId());
-            oldUser.setName(newUser.getName());
-        }
-        if (Objects.nonNull(newUser.getBirthday()) && newUser.getBirthday().isBefore(LocalDate.now())) {
-            log.info("Дата рождения юзера с id {} была обновлена", newUser.getId());
-            oldUser.setBirthday(newUser.getBirthday());
-        }
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User removeFriend(
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long friendId
+    ) {
+        log.info("Получен http-запрос на удаление из друзей");
+        return userService.removeFriend(id, friendId);
     }
 }
