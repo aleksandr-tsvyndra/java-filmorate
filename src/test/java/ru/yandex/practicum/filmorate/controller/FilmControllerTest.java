@@ -2,8 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -65,7 +64,7 @@ class FilmControllerTest {
         var createdFilm = filmController.create(new Film());
         long notPresentId = createdFilm.getId() + 1;
 
-        assertThrows(FilmNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             filmController.getById(notPresentId);
         });
     }
@@ -99,7 +98,7 @@ class FilmControllerTest {
         var updateFilm = new Film();
         updateFilm.setId(notValidId);
 
-        assertThrows(FilmNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             filmController.update(updateFilm);
         });
     }
@@ -191,7 +190,7 @@ class FilmControllerTest {
                 LocalDate.parse("1967-03-25")));
         var notPresentId = 9L;
 
-        assertThrows(FilmNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             filmController.addLike(notPresentId, user.getId());
         });
     }
@@ -201,7 +200,7 @@ class FilmControllerTest {
         var createdFilm = filmController.create(new Film());
         var notPresentId = 29L;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             filmController.addLike(createdFilm.getId(), notPresentId);
         });
     }
@@ -226,7 +225,7 @@ class FilmControllerTest {
                 LocalDate.parse("1967-03-25")));
         var notPresentId = 9L;
 
-        assertThrows(FilmNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             filmController.removeLike(notPresentId, user.getId());
         });
     }
@@ -236,7 +235,7 @@ class FilmControllerTest {
         var createdFilm = filmController.create(new Film());
         var notPresentId = 29L;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             filmController.removeLike(createdFilm.getId(), notPresentId);
         });
     }

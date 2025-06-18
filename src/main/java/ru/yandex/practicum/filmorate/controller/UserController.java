@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -33,19 +34,22 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable long id) {
+    public User getById(@PathVariable @Positive long id) {
         log.info("Получен http-запрос на получение юзера с id {}", id);
         return userService.getById(id);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getUserFriends(@PathVariable long id) {
+    public Collection<User> getUserFriends(@PathVariable @Positive long id) {
         log.info("Получен http-запрос на получение списка друзей юзера с id {}", id);
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+    public Collection<User> getCommonFriends(
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long otherId
+    ) {
         log.info("Получен http-запрос на получение списка друзей, общих с другим юзером");
         return userService.getCommonFriends(id, otherId);
     }
@@ -67,13 +71,19 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(@PathVariable long id, @PathVariable long friendId) {
+    public User addFriend(
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long friendId
+    ) {
         log.info("Получен http-запрос на добавление в друзья");
         return userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User removeFriend(@PathVariable long id, @PathVariable long friendId) {
+    public User removeFriend(
+            @PathVariable @Positive long id,
+            @PathVariable @Positive long friendId
+    ) {
         log.info("Получен http-запрос на удаление из друзей");
         return userService.removeFriend(id, friendId);
     }

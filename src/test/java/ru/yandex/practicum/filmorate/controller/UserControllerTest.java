@@ -4,14 +4,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.DuplicateEmailException;
 import ru.yandex.practicum.filmorate.exception.DuplicateLoginException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserControllerTest {
 
@@ -90,7 +94,7 @@ class UserControllerTest {
                 "name", LocalDate.parse("1950-08-20")));
         long notPresentId = createdUser.getId() + 1;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.getById(notPresentId);
         });
     }
@@ -124,7 +128,7 @@ class UserControllerTest {
         long notValidId = createdUser.getId() + 1;
         var updatedUser = new User(notValidId, "e@mail.ru", "login", null, null);
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.update(updatedUser);
         });
     }
@@ -187,7 +191,7 @@ class UserControllerTest {
         var friendId = friend.getId();
         var userId = friend.getId() + 1;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.addFriend(userId, friendId);
         });
     }
@@ -221,7 +225,7 @@ class UserControllerTest {
                 "john", LocalDate.parse("1991-08-20")));
         var notPresentId = user.getId() + 1;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.getUserFriends(notPresentId);
         });
     }
@@ -268,7 +272,7 @@ class UserControllerTest {
         // создаём id не существующего юзера
         var notPresentUserId = userFriendId + 1;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.removeFriend(notPresentUserId, userFriendId);
         });
     }
@@ -281,7 +285,7 @@ class UserControllerTest {
         // создаём id не существующего друга
         var notPresentFriendId = userId + 1;
 
-        assertThrows(UserNotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.removeFriend(userId, notPresentFriendId);
         });
     }

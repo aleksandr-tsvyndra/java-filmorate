@@ -3,8 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -46,7 +45,7 @@ public class FilmService {
         if (Objects.isNull(filmById)) {
             var message = String.format("Фильма с id %d нет в базе данных", id);
             log.warn(message);
-            throw new FilmNotFoundException(message);
+            throw new NotFoundException(message);
         }
         log.info("Фильм с id {} успешно найден", id);
         return filmById;
@@ -75,7 +74,7 @@ public class FilmService {
         if (Objects.isNull(user)) {
             var message = String.format("Юзера с id %d нет в базе данных", userId);
             log.warn(message);
-            throw new UserNotFoundException(message);
+            throw new NotFoundException(message);
         }
         Set<Long> likes = film.getLikes();
         likes.add(userId);
@@ -89,7 +88,7 @@ public class FilmService {
         if (Objects.isNull(user)) {
             var message = String.format("Юзера с id %d нет в базе данных", userId);
             log.warn(message);
-            throw new UserNotFoundException(message);
+            throw new NotFoundException(message);
         }
         Set<Long> likes = film.getLikes();
         likes.remove(userId);

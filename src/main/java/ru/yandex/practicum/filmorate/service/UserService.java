@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DuplicateEmailException;
 import ru.yandex.practicum.filmorate.exception.DuplicateLoginException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -29,7 +29,7 @@ public class UserService {
         if (Objects.isNull(userById)) {
             var message = String.format("Юзера с id %d нет в базе данных", id);
             log.warn(message);
-            throw new UserNotFoundException(message);
+            throw new NotFoundException(message);
         }
         log.info("Юзер с id {} успешно найден", id);
         return userById;
