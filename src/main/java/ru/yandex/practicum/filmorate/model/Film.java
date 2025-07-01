@@ -32,4 +32,6 @@ public class Film {
     @Positive(groups = Marker.OnCreate.class)
     private Integer duration;
     private final Set<Long> likes = new HashSet<>();
+    private Rating mpa;
+    private Set<Genre> genres;
 }
