@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.DuplicateEmailException;
+import ru.yandex.practicum.filmorate.exception.DuplicateKeyException;
 import ru.yandex.practicum.filmorate.exception.DuplicateLoginException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
@@ -37,17 +38,21 @@ public class GlobalExceptionHandler {
         return new ErrorResponse("Ошибка валидации", e.getMessage());
     }
 
-    @ExceptionHandler({DuplicateEmailException.class, DuplicateLoginException.class})
+    @ExceptionHandler({
+            DuplicateEmailException.class,
+            DuplicateLoginException.class,
+            DuplicateKeyException.class
+    })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleDuplicateEmail(final RuntimeException e) {
-        log.warn("Дублирование электронной почты или логина: {}", e.getMessage());
+        log.warn("Ошибка дублирования данных: {}", e.getMessage());
         return new ErrorResponse("Ошибка дубликата", e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
-        log.warn("Возникла непредвиденная ошибка: {}", e.getMessage());
+        log.error("Возникла непредвиденная ошибка: ", e);
         return new ErrorResponse("Ошибка обращения к сервису", e.getMessage());
     }
 }

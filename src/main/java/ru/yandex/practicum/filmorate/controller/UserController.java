@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.marker.Marker;
+import ru.yandex.practicum.filmorate.dto.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -56,7 +58,7 @@ public class UserController {
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
-    public User create(@Valid @RequestBody User user) {
+    public User create(@Valid @RequestBody NewUserRequest user) {
         log.info("Получен http-запрос на создание юзера");
         User createdUser = userService.create(user);
         log.info("Новый юзер с id {} был добавлен в базу данных", createdUser.getId());
@@ -65,26 +67,26 @@ public class UserController {
 
     @PutMapping
     @Validated(Marker.OnUpdate.class)
-    public User update(@Valid @RequestBody User newUser) {
+    public User update(@Valid @RequestBody UpdateUserRequest newUser) {
         log.info("Получен http-запрос на обновление юзера");
         return userService.update(newUser);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriend(
+    public void addFriend(
             @PathVariable @Positive long id,
             @PathVariable @Positive long friendId
     ) {
         log.info("Получен http-запрос на добавление в друзья");
-        return userService.addFriend(id, friendId);
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User removeFriend(
+    public void removeFriend(
             @PathVariable @Positive long id,
             @PathVariable @Positive long friendId
     ) {
         log.info("Получен http-запрос на удаление из друзей");
-        return userService.removeFriend(id, friendId);
+        userService.removeFriend(id, friendId);
     }
 }

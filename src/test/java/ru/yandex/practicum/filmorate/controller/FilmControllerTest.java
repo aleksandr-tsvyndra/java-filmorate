@@ -6,10 +6,10 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.dal.film.FilmStorage;
+import ru.yandex.practicum.filmorate.dal.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.dal.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dal.user.UserStorage;
 
 import java.time.LocalDate;
 
@@ -47,7 +47,7 @@ class FilmControllerTest {
     @Test
     public void getById_whenFilmPresent_returnsFilm() {
         var createdFilm = filmController.create(new Film(0L, "nisi eiusmod", "adipisicing",
-                LocalDate.parse("1967-03-25"), 100));
+                LocalDate.parse("1967-03-25"), 100, null, null));
         long presentId = createdFilm.getId();
 
         var actual = filmController.getById(presentId);
@@ -106,12 +106,12 @@ class FilmControllerTest {
     @Test
     public void update_whenIdValid_returnsUpdatedFilm() {
         var oldFilm = filmController.create(new Film(1L, "Форрест Гамп", "adipisicing",
-                LocalDate.parse("1967-03-25"), 100));
+                LocalDate.parse("1967-03-25"), 100, null, null));
         // создаем Film с id, который есть в мапе контроллера
         // и задаем ему другие поля
         long validId = oldFilm.getId();
         var newFilm = new Film(validId, "Криминальное чтиво", "qwertyuiop",
-                LocalDate.parse("2011-09-15"), 220);
+                LocalDate.parse("2011-09-15"), 220, null, null);
 
         filmController.update(newFilm);
 
@@ -124,11 +124,12 @@ class FilmControllerTest {
     @Test
     public void update_whenFieldNullOrEmpty_shouldNotUpdateField() {
         var oldFilm = filmController.create(new Film(1L, "Форрест Гамп", "adipisicing",
-                LocalDate.parse("1967-03-25"), 100));
+                LocalDate.parse("1967-03-25"), 100, null, null));
         // создаем Film с id, который есть в хранилище
         // значение его полей name и releasedDate будут null
         long validId = oldFilm.getId();
-        var newFilm = new Film(validId, null, "qwertyuiop", null, 220);
+        var newFilm = new Film(validId, null, "qwertyuiop", null,
+                220, null, null);
 
         filmController.update(newFilm);
 

@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exception.DuplicateLoginException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.dal.user.InMemoryUserStorage;
 
 import java.time.LocalDate;
 
@@ -258,10 +258,9 @@ class UserControllerTest {
                 "phil", LocalDate.parse("1997-02-12")));
         var notUserFriendId = notUserFriend.getId();
 
-        var actual = userController.removeFriend(userId, notUserFriendId);
+        userController.removeFriend(userId, notUserFriendId);
 
-        assertEquals(user.getId(), actual.getId());
-        assertEquals(0, actual.getFriends().size());
+        assertEquals(0, user.getFriends().size());
     }
 
     @Test
