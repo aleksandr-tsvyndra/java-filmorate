@@ -43,13 +43,8 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     private final RatingStorage ratingStorage;
 
     @Autowired
-    public FilmDbStorage (
-            JdbcTemplate jdbc,
-            RowMapper<Film> filmMapper,
-            RowMapper<Genre> genreMapper,
-            RowMapper<FilmLike> likeMapper,
-            RowMapper<Rating> ratingMapper
-    ) {
+    public FilmDbStorage (JdbcTemplate jdbc, RowMapper<Film> filmMapper, RowMapper<Genre> genreMapper,
+                          RowMapper<FilmLike> likeMapper, RowMapper<Rating> ratingMapper) {
         super(jdbc, filmMapper);
         genreStorage = new GenreDbStorage(jdbc, genreMapper);
         likeStorage = new LikeDbStorage(jdbc, likeMapper);
@@ -69,13 +64,11 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-        Long id = insert(
-                INSERT_QUERY,
+        Long id = insert(INSERT_QUERY,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
-                film.getDuration()
-        );
+                film.getDuration());
         film.setId(id);
         if (Objects.nonNull(film.getMpa())) {
             checkMpa(film);
@@ -91,15 +84,13 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public Film update(Film oldFilm, UpdateFilmRequest newFilm) {
         FilmUtils.updateFields(oldFilm, newFilm);
-        update(
-                UPDATE_QUERY,
+        update(UPDATE_QUERY,
                 oldFilm.getName(),
                 oldFilm.getDescription(),
                 oldFilm.getReleaseDate(),
                 oldFilm.getDuration(),
                 oldFilm.getMpa().getId(),
-                oldFilm.getId()
-        );
+                oldFilm.getId());
         updateFilmGenres(oldFilm);
         return oldFilm;
     }

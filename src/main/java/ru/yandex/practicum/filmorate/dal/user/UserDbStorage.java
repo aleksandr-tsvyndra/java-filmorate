@@ -35,11 +35,9 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
     private final FriendshipStorage friendshipStorage;
 
     @Autowired
-    public UserDbStorage(
-            JdbcTemplate jdbc,
+    public UserDbStorage(JdbcTemplate jdbc,
             RowMapper<User> userMapper,
-            RowMapper<Friendship> friendshipMapper
-    ) {
+            RowMapper<Friendship> friendshipMapper) {
         super(jdbc, userMapper);
         friendshipStorage = new FriendshipDbStorage(jdbc, friendshipMapper);
     }
