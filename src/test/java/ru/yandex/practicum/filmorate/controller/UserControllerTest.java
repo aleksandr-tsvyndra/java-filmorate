@@ -272,7 +272,7 @@ class UserControllerTest {
         // создаём id не существующего юзера
         var notPresentUserId = userFriendId + 1;
 
-        assertThrows(NotFoundException .class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             userController.removeFriend(notPresentUserId, userFriendId);
         });
     }
