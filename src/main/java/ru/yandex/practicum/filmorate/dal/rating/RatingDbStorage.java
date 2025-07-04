@@ -17,7 +17,7 @@ public class RatingDbStorage extends BaseStorage<Rating> implements RatingStorag
     private static final String FIND_ALL_RATING_QUERY = "SELECT * FROM ratings";
 
     @Autowired
-    public RatingDbStorage(JdbcTemplate jdbc, RowMapper<Rating> mapper ) {
+    public RatingDbStorage(JdbcTemplate jdbc, RowMapper<Rating> mapper) {
         super(jdbc, mapper);
     }
 
