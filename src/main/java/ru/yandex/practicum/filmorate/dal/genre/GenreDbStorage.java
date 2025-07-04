@@ -24,7 +24,7 @@ public class GenreDbStorage extends BaseStorage<Genre> implements GenreStorage {
     private static final String DELETE_FILM_GENRE_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
 
     @Autowired
-    public GenreDbStorage (JdbcTemplate jdbc, RowMapper<Genre> mapper) {
+    public GenreDbStorage(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper);
     }
 
