@@ -1,6 +1,8 @@
 logging:
   level.org.zalando.logbook: TRACE
 spring:
+  application:
+    name: filmorate
   sql:
     init:
       mode: always
@@ -9,3 +11,5 @@ spring:
     driverClassName: org.h2.Driver
     username: sa
     password: password
+server:
+  port: 8080
