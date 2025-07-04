@@ -2,14 +2,16 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.dal.film.FilmStorage;
 import ru.yandex.practicum.filmorate.dal.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.dal.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.dal.user.UserStorage;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 
@@ -38,7 +40,7 @@ class FilmControllerTest {
     public void create_whenFilmIsValid_returnsFilmWithId() {
         int expectedId = 1;
 
-        var actual = filmController.create(new Film());
+        var actual = filmController.create(new NewFilmRequest());
 
         assertNotNull(actual);
         assertEquals(expectedId, actual.getId());
@@ -46,7 +48,7 @@ class FilmControllerTest {
 
     @Test
     public void getById_whenFilmPresent_returnsFilm() {
-        var createdFilm = filmController.create(new Film(0L, "nisi eiusmod", "adipisicing",
+        var createdFilm = filmController.create(new NewFilmRequest("nisi eiusmod", "adipisicing",
                 LocalDate.parse("1967-03-25"), 100, null, null));
         long presentId = createdFilm.getId();
 
@@ -61,7 +63,7 @@ class FilmControllerTest {
 
     @Test
     public void getById_whenFilmNotPresent_throwsException() {
-        var createdFilm = filmController.create(new Film());
+        var createdFilm = filmController.create(new NewFilmRequest());
         long notPresentId = createdFilm.getId() + 1;
 
         assertThrows(NotFoundException.class, () -> {
@@ -82,7 +84,7 @@ class FilmControllerTest {
     @Test
     public void getAll_whenThereIsFilm_returnsListWithFilm() {
         int expectedSize = 1;
-        filmController.create(new Film());
+        filmController.create(new NewFilmRequest());
 
         var actual = filmController.getAll();
 
@@ -92,10 +94,10 @@ class FilmControllerTest {
 
     @Test
     public void update_whenIdNotValid_throwsException() {
-        var createdFilm = filmController.create(new Film());
+        var createdFilm = filmController.create(new NewFilmRequest());
         // создаем Film с id, которого нет в мапе контроллера
         long notValidId = createdFilm.getId() + 1;
-        var updateFilm = new Film();
+        var updateFilm = new UpdateFilmRequest();
         updateFilm.setId(notValidId);
 
         assertThrows(NotFoundException.class, () -> {
@@ -105,12 +107,12 @@ class FilmControllerTest {
 
     @Test
     public void update_whenIdValid_returnsUpdatedFilm() {
-        var oldFilm = filmController.create(new Film(1L, "Форрест Гамп", "adipisicing",
+        var oldFilm = filmController.create(new NewFilmRequest("Форрест Гамп", "adipisicing",
                 LocalDate.parse("1967-03-25"), 100, null, null));
         // создаем Film с id, который есть в мапе контроллера
         // и задаем ему другие поля
         long validId = oldFilm.getId();
-        var newFilm = new Film(validId, "Криминальное чтиво", "qwertyuiop",
+        var newFilm = new UpdateFilmRequest(validId, "Криминальное чтиво", "qwertyuiop",
                 LocalDate.parse("2011-09-15"), 220, null, null);
 
         filmController.update(newFilm);
@@ -123,12 +125,12 @@ class FilmControllerTest {
 
     @Test
     public void update_whenFieldNullOrEmpty_shouldNotUpdateField() {
-        var oldFilm = filmController.create(new Film(1L, "Форрест Гамп", "adipisicing",
+        var oldFilm = filmController.create(new NewFilmRequest("Форрест Гамп", "adipisicing",
                 LocalDate.parse("1967-03-25"), 100, null, null));
         // создаем Film с id, который есть в хранилище
         // значение его полей name и releasedDate будут null
         long validId = oldFilm.getId();
-        var newFilm = new Film(validId, null, "qwertyuiop", null,
+        var newFilm = new UpdateFilmRequest(validId, null, "qwertyuiop", null,
                 220, null, null);
 
         filmController.update(newFilm);
@@ -144,7 +146,7 @@ class FilmControllerTest {
         // добавляем в хранилище 4 фильма
         int filmsCount = 4;
         for (int i = 0; i < filmsCount; i++) {
-            filmController.create(new Film());
+            filmController.create(new NewFilmRequest());
         }
 
         // устанавливаем "вручную" каждому фильму разное количество лайков
@@ -173,9 +175,9 @@ class FilmControllerTest {
 
     @Test
     public void addLike_returnsFilmWithLike() {
-        var user = userStorage.create(new User(0L, "a@mail.com", "A1Ar", "Audrey",
+        var user = userStorage.create(new User(0L, "Audrey", "A1Ar", "a@mail.com",
                 LocalDate.parse("1967-03-25")));
-        var createdFilm = filmController.create(new Film());
+        var createdFilm = filmController.create(new NewFilmRequest());
 
         assertEquals(0, createdFilm.getLikes().size());
 
@@ -198,7 +200,7 @@ class FilmControllerTest {
 
     @Test
     public void addLike_whenUserNotPresent_throwsException() {
-        var createdFilm = filmController.create(new Film());
+        var createdFilm = filmController.create(new NewFilmRequest());
         var notPresentId = 29L;
 
         assertThrows(NotFoundException.class, () -> {
@@ -210,7 +212,7 @@ class FilmControllerTest {
     public void removeLike_returnsFilmWithNoLike() {
         var user = userStorage.create(new User(0L, "a@mail.com", "A1Ar", "Audrey",
                 LocalDate.parse("1967-03-25")));
-        var createdFilm = filmController.create(new Film());
+        var createdFilm = filmController.create(new NewFilmRequest());
         createdFilm.getLikes().add(user.getId());
 
         assertEquals(1, createdFilm.getLikes().size());
@@ -233,7 +235,7 @@ class FilmControllerTest {
 
     @Test
     public void removeLike_whenUserNotPresent_throwsException() {
-        var createdFilm = filmController.create(new Film());
+        var createdFilm = filmController.create(new NewFilmRequest());
         var notPresentId = 29L;
 
         assertThrows(NotFoundException.class, () -> {

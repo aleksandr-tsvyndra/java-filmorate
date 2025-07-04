@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.dto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.controller.marker.Marker;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -10,6 +12,8 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateFilmRequest {
     @NotNull(groups = Marker.OnUpdate.class)
     private Long id;
