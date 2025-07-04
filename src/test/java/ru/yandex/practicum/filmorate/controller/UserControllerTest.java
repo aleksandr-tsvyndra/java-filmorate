@@ -40,7 +40,7 @@ class UserControllerTest {
 
     @Test
     public void create_whenEmailDuplicate_throwsException() {
-        var createdUser = userController.create(new NewUserRequest( "test", "login",
+        var createdUser = userController.create(new NewUserRequest("test", "login",
                 "test@mail.ru", null));
         String email = createdUser.getEmail();
         var testUser = new NewUserRequest(email, "1_login", "test@mail.ru", null);
@@ -172,9 +172,9 @@ class UserControllerTest {
 
     @Test
     public void addFriend_returnsUserWithFriendAdded() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
-        var friend = userController.create(new NewUserRequest( "yandex@mail.ru", "cusco",
+        var friend = userController.create(new NewUserRequest("yandex@mail.ru", "cusco",
                 "nick", LocalDate.parse("1992-10-25")));
         var userId = user.getId();
         var friendId = friend.getId();
@@ -187,7 +187,7 @@ class UserControllerTest {
 
     @Test
     public void addFriend_whenUserNotPresent_throwsException() {
-        var friend = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var friend = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var friendId = friend.getId();
         var userId = friend.getId() + 1;
@@ -199,13 +199,13 @@ class UserControllerTest {
 
     @Test
     public void getUserFriends_returnsUserFriendsCollection() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var userId = user.getId();
 
-        var friend1 = userController.create(new NewUserRequest( "m@mail.ru", "cusco",
+        var friend1 = userController.create(new NewUserRequest("m@mail.ru", "cusco",
                 "phil", LocalDate.parse("1997-02-12")));
-        var friend2 = userController.create(new NewUserRequest( "g@mail.ru", "pato",
+        var friend2 = userController.create(new NewUserRequest("g@mail.ru", "pato",
                 "alice", LocalDate.parse("1999-01-21")));
 
         // добавляем юзеру с id 1 двух друзей с id 2 и id 3
@@ -222,7 +222,7 @@ class UserControllerTest {
 
     @Test
     public void getUserFriends_whenUserNotPresent_throwsException() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var notPresentId = user.getId() + 1;
 
@@ -233,7 +233,7 @@ class UserControllerTest {
 
     @Test
     public void removeFriend_whenUserHasFriend_returnsUserWithRemovedFriend() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var userId = user.getId();
 
@@ -251,11 +251,11 @@ class UserControllerTest {
 
     @Test
     public void removeFriend_whenUserHasNoFriends_notFriendRemove() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var userId = user.getId();
 
-        var notUserFriend = userController.create(new NewUserRequest( "m@mail.ru", "cusco",
+        var notUserFriend = userController.create(new NewUserRequest("m@mail.ru", "cusco",
                 "phil", LocalDate.parse("1997-02-12")));
         var notUserFriendId = notUserFriend.getId();
 
@@ -266,7 +266,7 @@ class UserControllerTest {
 
     @Test
     public void removeFriend_whenUserNotPresent_throwsException() {
-        var userFriend = userController.create(new NewUserRequest( "m@mail.ru", "cusco",
+        var userFriend = userController.create(new NewUserRequest("m@mail.ru", "cusco",
                 "phil", LocalDate.parse("1997-02-12")));
         var userFriendId = userFriend.getId();
         // создаём id не существующего юзера
@@ -279,7 +279,7 @@ class UserControllerTest {
 
     @Test
     public void removeFriend_whenFriendNotPresent_throwsException() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var userId = user.getId();
         // создаём id не существующего друга
@@ -292,15 +292,15 @@ class UserControllerTest {
 
     @Test
     public void getCommonFriends_returnsUsersCommonFriendsCollection() {
-        var user = userController.create(new NewUserRequest( "mail@mail.ru", "dolore",
+        var user = userController.create(new NewUserRequest("mail@mail.ru", "dolore",
                 "john", LocalDate.parse("1991-08-20")));
         var userId = user.getId();
-        var otherUser = userController.create(new NewUserRequest( "yandex@mail.ru", "cusco",
+        var otherUser = userController.create(new NewUserRequest("yandex@mail.ru", "cusco",
                 "phil", LocalDate.parse("1997-02-12")));
         var otherUserId = otherUser.getId();
 
         // у юзеров user и otherUser будет один общий друг commonFriend
-        var commonFriend = userController.create(new NewUserRequest( "Dan70@yahoo.com", "cute",
+        var commonFriend = userController.create(new NewUserRequest("Dan70@yahoo.com", "cute",
                 "alice", LocalDate.parse("1974-12-17")));
         userController.addFriend(userId, commonFriend.getId());
         userController.addFriend(otherUserId, commonFriend.getId());
