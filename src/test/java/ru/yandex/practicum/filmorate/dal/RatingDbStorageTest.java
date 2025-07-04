@@ -50,22 +50,22 @@ public class RatingDbStorageTest {
         assertThat(foundMpa).isNotNull();
         assertThat(foundMpa.getName()).isEqualTo(mpaG.getName());
 
-        Rating mpaPG_13 = new Rating();
-        mpaPG_13.setId(3);
-        mpaPG_13.setName("PG-13");
+        Rating mpaPG13 = new Rating();
+        mpaPG13.setId(3);
+        mpaPG13.setName("PG-13");
 
-        foundMpa = ratingStorage.findById(mpaPG_13.getId());
-
-        assertThat(foundMpa).isNotNull();
-        assertThat(foundMpa.getName()).isEqualTo(mpaPG_13.getName());
-
-        Rating mpaPG_17 = new Rating();
-        mpaPG_17.setId(5);
-        mpaPG_17.setName("NC-17");
-
-        foundMpa = ratingStorage.findById(mpaPG_17.getId());
+        foundMpa = ratingStorage.findById(mpaPG13.getId());
 
         assertThat(foundMpa).isNotNull();
-        assertThat(foundMpa.getName()).isEqualTo(mpaPG_17.getName());
+        assertThat(foundMpa.getName()).isEqualTo(mpaPG13.getName());
+
+        Rating mpaPG17 = new Rating();
+        mpaPG17.setId(5);
+        mpaPG17.setName("NC-17");
+
+        foundMpa = ratingStorage.findById(mpaPG17.getId());
+
+        assertThat(foundMpa).isNotNull();
+        assertThat(foundMpa.getName()).isEqualTo(mpaPG17.getName());
     }
 }
