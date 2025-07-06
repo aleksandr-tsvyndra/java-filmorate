@@ -1,8 +1,6 @@
 logging:
   level.org.zalando.logbook: TRACE
 spring:
-  application:
-    name: filmorate
   sql:
     init:
       mode: always

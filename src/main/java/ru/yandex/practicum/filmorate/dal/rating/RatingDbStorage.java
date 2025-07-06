@@ -15,6 +15,7 @@ import java.util.Optional;
 public class RatingDbStorage extends BaseStorage<Rating> implements RatingStorage {
     private static final String FIND_RATING_QUERY = "SELECT * FROM ratings WHERE rating_id = ?";
     private static final String FIND_ALL_RATING_QUERY = "SELECT * FROM ratings";
+    private static final String UPDATE_FILM_RATING_QUERY = "UPDATE films SET rating_id = ? WHERE film_id = ?";
 
     @Autowired
     public RatingDbStorage(JdbcTemplate jdbc, RowMapper<Rating> mapper) {
@@ -33,5 +34,10 @@ public class RatingDbStorage extends BaseStorage<Rating> implements RatingStorag
     public Rating findById(Integer ratingId) {
         Optional<Rating> result = findOne(FIND_RATING_QUERY, ratingId);
         return result.orElse(null);
+    }
+
+    @Override
+    public void updateFilmRating(Integer ratingId, Long filmId) {
+        update(UPDATE_FILM_RATING_QUERY, ratingId, filmId);
     }
 }

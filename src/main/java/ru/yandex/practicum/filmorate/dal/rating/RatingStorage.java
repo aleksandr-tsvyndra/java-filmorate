@@ -8,4 +8,6 @@ public interface RatingStorage {
     Collection<Rating> getAll();
 
     Rating findById(Integer ratingId);
+
+    void updateFilmRating(Integer ratingId, Long filmId);
 }

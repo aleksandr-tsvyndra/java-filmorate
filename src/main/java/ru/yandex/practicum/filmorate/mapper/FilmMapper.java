@@ -15,6 +15,7 @@ public final class FilmMapper {
         film.setDuration(request.getDuration());
         film.setMpa(request.getMpa());
         film.setGenres(request.getGenres());
+        film.getLikes().addAll(request.getLikes());
 
         return film;
     }
