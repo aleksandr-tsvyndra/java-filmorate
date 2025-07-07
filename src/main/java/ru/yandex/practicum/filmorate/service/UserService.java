@@ -3,25 +3,35 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.friendship.FriendshipStorage;
+import ru.yandex.practicum.filmorate.dal.user.UserStorage;
+import ru.yandex.practicum.filmorate.dto.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.DuplicateEmailException;
+import ru.yandex.practicum.filmorate.exception.DuplicateKeyException;
 import ru.yandex.practicum.filmorate.exception.DuplicateLoginException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendshipStorage friendshipStorage;
 
     public Collection<User> getAll() {
-        return userStorage.getAll();
+        return userStorage.getAll()
+                .stream()
+                .peek(u -> u.getFriends().addAll(setUserFriends(u.getId())))
+                .toList();
     }
 
     public User getById(long id) {
@@ -31,18 +41,15 @@ public class UserService {
             log.warn(message);
             throw new NotFoundException(message);
         }
+        userById.getFriends().addAll(setUserFriends(userById.getId()));
         log.info("Юзер с id {} успешно найден", id);
         return userById;
     }
 
     public Collection<User> getUserFriends(long id) {
-        User user = getById(id);
-        Set<Long> userFriends = user.getFriends();
+        checkUserPresence(id);
         log.info("Выводим список друзей юзера с id {}", id);
-        return userStorage.getAll()
-                .stream()
-                .filter(u -> userFriends.contains(u.getId()))
-                .toList();
+        return userStorage.getUserFriends(id);
     }
 
     public Collection<User> getCommonFriends(long id, long otherId) {
@@ -54,79 +61,82 @@ public class UserService {
                 .toList();
     }
 
-    public User create(User user) {
-        checkEmail(user);
-        checkLogin(user);
-        checkName(user);
+    public User create(NewUserRequest request) {
+        checkEmail(request.getEmail());
+        checkLogin(request.getLogin());
+        checkName(request);
+        User user = UserMapper.mapToUser(request);
         return userStorage.create(user);
     }
 
-    public User update(User newUser) {
-        User oldUser = getById(newUser.getId());
-        log.info("Юзер с id {} был найден в базе данных", newUser.getId());
-        updateFields(oldUser, newUser);
-        log.info("Успешно выполнен http-запрос на обновление юзера с id {}", newUser.getId());
-        return oldUser;
-    }
-
-    public User addFriend(long id, long friendId) {
-        User user = getById(id);
-        User friend = getById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
-        log.info("Юзеры с id {} и id {} стали друзьями", id, friendId);
+    public User update(UpdateUserRequest request) {
+        User user = checkUserPresence(request.getId());
+        log.info("Юзер с id {} был найден в базе данных", request.getId());
+        updateFields(user, request);
+        userStorage.update(user);
+        log.info("Успешно выполнен http-запрос на обновление юзера с id {}", user.getId());
         return user;
     }
 
-    public User removeFriend(long id, long friendId) {
-        User user = getById(id);
-        User friend = getById(friendId);
-        boolean result = user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
-        if (result) {
-            log.info("Юзеры с id {} и id {} перестали быть друзьями", id, friendId);
-        } else {
-            log.info("Юзеры с id {} и id {} изначально не были друзьями", id, friendId);
+    public void addFriend(Long userId, Long friendId) {
+        checkUserPresence(userId);
+        checkUserPresence(friendId);
+        if (friendshipStorage.isFriend(userId, friendId)) {
+            String message = String.format("Юзер с id %d уже в друзьях у юзера с id %d", friendId, userId);
+            throw new DuplicateKeyException(message);
         }
-        return user;
+        friendshipStorage.addFriend(userId, friendId);
+        log.info("Юзер с id {} добавлен в друзья юзера с id {}", friendId, userId);
     }
 
-    private boolean hasDuplicateEmail(User user) {
-        log.info("Проверяем имейл из http-запроса на дубликат");
-        return userStorage.getAll()
+    public void removeFriend(Long userId, Long friendId) {
+        checkUserPresence(userId);
+        checkUserPresence(friendId);
+        friendshipStorage.removeFriend(userId, friendId);
+        log.info("Юзер с id {} удален из друзей юзера с id {}", friendId, userId);
+    }
+
+    private Set<Long> setUserFriends(Long userId) {
+        return userStorage.getUserFriends(userId)
                 .stream()
-                .map(User::getEmail)
-                .anyMatch(user.getEmail()::equals);
+                .map(User::getId)
+                .collect(Collectors.toSet());
     }
 
-    private boolean hasDuplicateLogin(User user) {
-        log.info("Проверяем логин из http-запроса на дубликат");
-        return userStorage.getAll()
-                .stream()
-                .map(User::getLogin)
-                .anyMatch(user.getLogin()::equals);
+    private User checkUserPresence(Long userId) {
+        return getById(userId);
     }
 
-    private void checkEmail(User user) {
-        if (hasDuplicateEmail(user)) {
-            var message = String.format("Имейл %s уже занят другим юзером", user.getEmail());
-            log.warn(message);
-            throw new DuplicateEmailException(message);
+    private void updateFields(User user, UpdateUserRequest request) {
+        if (request.hasEmail() && isEmailValid(request.getEmail())) {
+            if (!request.getEmail().equals(user.getEmail())) {
+                try {
+                    checkEmail(request.getEmail());
+                    log.info("Имейл юзера с id {} был обновлен", request.getId());
+                    user.setEmail(request.getEmail());
+                } catch (DuplicateEmailException e) {
+                    log.info("Имейл юзера с id {} обновить не получилось", request.getId());
+                }
+            }
         }
-    }
-
-    private void checkLogin(User user) {
-        if (hasDuplicateLogin(user)) {
-            var message = String.format("Логин %s уже занят другим юзером", user.getLogin());
-            log.warn(message);
-            throw new DuplicateLoginException(message);
+        if (request.hasLogin() && !hasLoginSpaces(request.getLogin())) {
+            if (!request.getLogin().equals(user.getLogin())) {
+                try {
+                    checkLogin(request.getLogin());
+                    log.info("Логин юзера с id {} был обновлен", request.getId());
+                    user.setLogin(request.getLogin());
+                } catch (DuplicateLoginException e) {
+                    log.info("Логин юзера с id {} обновить не получилось", request.getId());
+                }
+            }
         }
-    }
-
-    private void checkName(User user) {
-        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
-            log.info("Имя пользователя не указано — будет использован логин: {}", user.getLogin());
-            user.setName(user.getLogin());
+        if (request.hasName()) {
+            log.info("Имя юзера с id {} было обновлено", request.getId());
+            user.setName(request.getName());
+        }
+        if (request.hasBirthday() && isBirthdayValid(request.getBirthday())) {
+            log.info("Дата рождения юзера с id {} была обновлена", request.getId());
+            user.setBirthday(request.getBirthday());
         }
     }
 
@@ -147,31 +157,41 @@ public class UserService {
         return email.matches(".*");
     }
 
-    private void updateFields(User oldUser, User newUser) {
-        if (Objects.nonNull(newUser.getEmail()) && !newUser.getEmail().isBlank() && isEmailValid(newUser.getEmail())) {
-            if (!newUser.getEmail().equals(oldUser.getEmail())) {
-                if (!hasDuplicateEmail(newUser)) {
-                    log.info("Имейл юзера с id {} был обновлен", newUser.getId());
-                    oldUser.setEmail(newUser.getEmail());
-                }
-            }
+    private boolean isBirthdayValid(LocalDate birthday) {
+        log.info("Проверяем, что дата рождения юзера не указана в будущем времени");
+        return birthday.isBefore(LocalDate.now());
+    }
+
+    private void checkEmail(String email) {
+        log.info("Проверяем имейл при создании юзера на дубликат");
+        boolean hasDuplicateEmail = getAll()
+                .stream()
+                .map(User::getEmail)
+                .anyMatch(email::equals);
+        if (hasDuplicateEmail) {
+            var message = String.format("Имейл %s уже занят другим юзером", email);
+            log.warn(message);
+            throw new DuplicateEmailException(message);
         }
-        if (Objects.nonNull(newUser.getLogin()) && !newUser.getLogin().isEmpty()
-                && !hasLoginSpaces(newUser.getLogin())) {
-            if (!newUser.getLogin().equals(oldUser.getLogin())) {
-                if (!hasDuplicateLogin(newUser)) {
-                    log.info("Логин юзера с id {} был обновлен", newUser.getId());
-                    oldUser.setLogin(newUser.getLogin());
-                }
-            }
+    }
+
+    private void checkLogin(String login) {
+        log.info("Проверка логина при создании юзера на дубликат");
+        boolean hasDuplicateLogin = getAll()
+                .stream()
+                .map(User::getLogin)
+                .anyMatch(login::equals);
+        if (hasDuplicateLogin) {
+            var message = String.format("Логин %s уже занят другим юзером", login);
+            log.warn(message);
+            throw new DuplicateLoginException(message);
         }
-        if (Objects.nonNull(newUser.getName()) && !newUser.getName().isBlank()) {
-            log.info("Имя юзера с id {} было обновлено", newUser.getId());
-            oldUser.setName(newUser.getName());
-        }
-        if (Objects.nonNull(newUser.getBirthday()) && newUser.getBirthday().isBefore(LocalDate.now())) {
-            log.info("Дата рождения юзера с id {} была обновлена", newUser.getId());
-            oldUser.setBirthday(newUser.getBirthday());
+    }
+
+    private void checkName(NewUserRequest user) {
+        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
+            log.info("Имя пользователя при создании не указано — будет использован логин: {}", user.getLogin());
+            user.setName(user.getLogin());
         }
     }
 }

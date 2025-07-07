@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.controller.marker.Marker;
+import ru.yandex.practicum.filmorate.dto.NewFilmRequest;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -51,7 +53,7 @@ public class FilmController {
     @PostMapping
     @Validated({Marker.OnCreate.class})
     @ResponseStatus(HttpStatus.CREATED)
-    public Film create(@Valid @RequestBody Film film) {
+    public Film create(@Valid @RequestBody NewFilmRequest film) {
         log.info("Получен http-запрос на добавление фильма");
         Film createdFilm = filmService.create(film);
         log.info("Новый фильм с id {} был добавлен в базу данных", createdFilm.getId());
@@ -60,7 +62,7 @@ public class FilmController {
 
     @PutMapping
     @Validated(Marker.OnUpdate.class)
-    public Film update(@Valid @RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody UpdateFilmRequest newFilm) {
         log.info("Получен http-запрос на обновление фильма");
         return filmService.update(newFilm);
     }
